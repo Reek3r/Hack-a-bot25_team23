@@ -1,0 +1,68 @@
+import RPi.GPIO as GPIO
+from time import sleep
+
+# Pin Definitions (BCM numbering)
+EN1 = 18    # PWM for left motors
+IN1 = 23    # Left forward
+IN2 = 24    # Left backward
+EN2 = 19    # PWM for right motors
+IN3 = 25    # Right forward
+IN4 = 8     # Right backward
+
+# Setup GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup([EN1, IN1, IN2, EN2, IN3, IN4], GPIO.OUT)
+
+# PWM Initialization
+pwm_left = GPIO.PWM(EN1, 1000)  # 1 kHz frequency
+pwm_right = GPIO.PWM(EN2, 1000)
+pwm_left.start(0)  # Start with 0% duty cycle
+pwm_right.start(0)
+
+def left_forward():
+    GPIO.output(IN1, GPIO.HIGH)
+    GPIO.output(IN2, GPIO.LOW)
+
+def left_backward():
+    GPIO.output(IN1, GPIO.LOW)
+    GPIO.output(IN2, GPIO.HIGH)
+
+def right_forward():
+    GPIO.output(IN3, GPIO.HIGH)
+    GPIO.output(IN4, GPIO.LOW)
+
+def right_backward():
+    GPIO.output(IN3, GPIO.LOW)
+    GPIO.output(IN4, GPIO.HIGH)
+
+def stop():
+    GPIO.output([IN1, IN2, IN3, IN4], GPIO.LOW)
+    pwm_left.ChangeDutyCycle(0)
+    pwm_right.ChangeDutyCycle(0)
+
+try:
+    while True:
+        # Example: Move forward at 50% speed
+        left_forward()
+        right_forward()
+        pwm_left.ChangeDutyCycle(50)
+        pwm_right.ChangeDutyCycle(50)
+        sleep(2)
+        
+        # Stop for 1 second
+        stop()
+        sleep(1)
+        
+        # Move backward at 30% speed
+        left_backward()
+        right_backward()
+        pwm_left.ChangeDutyCycle(30)
+        pwm_right.ChangeDutyCycle(30)
+        sleep(2)
+        
+        # Stop and clean up on Ctrl+C
+        stop()
+        sleep(1)
+except KeyboardInterrupt:
+    stop()
+    GPIO.cleanup()
