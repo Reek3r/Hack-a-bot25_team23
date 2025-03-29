@@ -17,10 +17,12 @@ from picamera2.devices.imx500 import (NetworkIntrinsics,
 class Detection:
     def __init__(self, coords, category, conf, metadata):
         """Create a Detection object, recording the bounding box, category and confidence."""
-        self.category = category
+        self.category = category # The important category!
         self.conf = conf
         self.box = imx500.convert_inference_coords(coords, metadata, picam2)
 
+def follow_target(detection) :
+    """FUNCTION TO HANDLE FOLLOWING AFTER PERSON IS DETECTED"""
 
 def parse_detections(metadata: dict):
     """Parse the output tensor into a number of detected objects, scaled to the ISP output."""
@@ -52,6 +54,11 @@ def parse_detections(metadata: dict):
         for box, score, category in zip(boxes, scores, classes)
         if score > threshold
     ]
+
+    for detection in detections:
+        if detection.category == 0:  # Check if the category is "person"
+            follow_target(detection)  # Call the trigger function
+ 
     return detections
 
 
